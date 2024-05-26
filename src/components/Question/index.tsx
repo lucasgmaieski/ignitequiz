@@ -39,12 +39,26 @@ export function Question({ question, alternativeSelected, setAlternativeSelected
   });
 
   const exitingKeyframe = new Keyframe({
-    
+    from: {
+      opacity: 1, 
+      transform: [
+        {translateX: 0},
+        {rotate: '0deg'}
+      ]
+    },
+    to: {
+      opacity: 0, 
+      transform: [
+        {translateX: SCREEN_WIDTH * -1},
+        {rotate: '-90deg'}
+      ]
+    }
   })
   return (
     <Animated.View 
       style={styles.container}
-      entering={enteringKeyframe}
+      entering={enteringKeyframe.duration(400)}
+      exiting={exitingKeyframe.duration(400)}
     >
       <Text style={styles.title}>
         {question.title}
