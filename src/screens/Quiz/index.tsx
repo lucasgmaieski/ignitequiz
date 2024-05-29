@@ -17,6 +17,7 @@ import Animated, { Easing, Extrapolate, interpolate, useAnimatedScrollHandler, u
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { ProgressBar } from '../../components/ProgressBar';
 import { THEME } from '../../styles/theme';
+import { OverlayFeedback } from '../../components/OverlayFeedback';
 
 interface Params {
   id: string;
@@ -30,9 +31,11 @@ const CARD_SKIP_AREA = -200;
 export function Quiz() {
   const [points, setPoints] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [statusReply, setStatusReply] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [quiz, setQuiz] = useState<QuizProps>({} as QuizProps);
   const [alternativeSelected, setAlternativeSelected] = useState<null | number>(null);
+
 
   const shake = useSharedValue(0);
   const scrollY = useSharedValue(0);
@@ -79,8 +82,11 @@ export function Quiz() {
     }
 
     if (quiz.questions[currentQuestion].correct === alternativeSelected) {
+      setStatusReply(1);
       setPoints(prevState => prevState + 1);
+      handleNextQuestion();
     } else {
+      setStatusReply(2);
       shakeAnimation();
     }
 
@@ -106,7 +112,12 @@ export function Quiz() {
   function shakeAnimation() {
     shake.value = withSequence(
       withTiming(3, { duration: 400, easing: Easing.bounce}),
-      withTiming(0)
+      withTiming(0, undefined, (finished) => {
+        'worklet';
+        if(finished) {
+          runOnJS(handleNextQuestion)();
+        }
+      })
     );
   }
 
@@ -179,11 +190,11 @@ export function Quiz() {
     setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (quiz.questions) {
-      handleNextQuestion();
-    }
-  }, [points]);
+  // useEffect(() => {
+  //   if (quiz.questions) {
+  //     handleNextQuestion();
+  //   }
+  // }, [points]);
 
   if (isLoading) {
     return <Loading />
@@ -191,6 +202,7 @@ export function Quiz() {
 
   return (
     <View style={styles.container}>
+      <OverlayFeedback status={statusReply}/>
       <Animated.View style={fixedProgressBarStyles}>
         <Text style={styles.title}>
           {quiz.title}
@@ -221,6 +233,7 @@ export function Quiz() {
               question={quiz.questions[currentQuestion]}
               alternativeSelected={alternativeSelected}
               setAlternativeSelected={setAlternativeSelected}
+              onUnmount={() => setStatusReply(0)}
             />
           </Animated.View>
         </GestureDetector>
