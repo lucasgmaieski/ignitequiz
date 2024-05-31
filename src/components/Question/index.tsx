@@ -60,7 +60,7 @@ export function Question({ question, alternativeSelected, setAlternativeSelected
       style={styles.container}
       entering={enteringKeyframe.duration(400)}
       exiting={exitingKeyframe.duration(400).withCallback((finished) => {
-        'worlet';
+        'worklet';
         if(finished) {
           runOnJS(onUnmount)();
         }

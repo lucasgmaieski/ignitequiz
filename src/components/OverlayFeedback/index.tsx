@@ -13,7 +13,7 @@ type Props = {
 export function OverlayFeedback({ status }: Props) {
     const opacity = useSharedValue(0);
     const color = STATUS[status];
-    const { height, width} = useWindowDimensions()
+    const { height, width } = useWindowDimensions()
 
     const styleAnimated = useAnimatedStyle(() => {
         return {
